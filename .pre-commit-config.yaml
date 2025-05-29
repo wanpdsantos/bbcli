@@ -1,0 +1,84 @@
+# Pre-commit configuration for bbcli
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+
+repos:
+  # General file checks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md]
+      - id: end-of-file-fixer
+      - id: check-yaml
+        args: [--allow-multiple-documents]
+      - id: check-toml
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: [--maxkb=500]
+      - id: check-ast
+      - id: debug-statements
+      - id: mixed-line-ending
+        args: [--fix=lf]
+
+  # Import sorting with isort
+  - repo: https://github.com/pycqa/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+        args: [--settings-path=pyproject.toml]
+
+  # Linting and formatting with ruff
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.4.8
+    hooks:
+      # Linter
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+      # Formatter
+      - id: ruff-format
+
+  # Type checking with mypy (simplified)
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.10.0
+    hooks:
+      - id: mypy
+        additional_dependencies:
+          - types-PyYAML
+          - types-requests
+        args: [--config-file=pyproject.toml]
+        files: ^src/.*\.py$
+
+  - repo: local
+    hooks:
+      - id: pytest
+        name: pytest
+        entry: uv run pytest
+        language: system
+        types: [python]
+        files: ^(src/|tests/).*\.py$
+        always_run: false
+        pass_filenames: false
+        args: [--tb=short, -q, --maxfail=5]
+
+default_language_version:
+  python: python3
+
+exclude: |
+  (?x)^(
+    \.git/|
+    \.venv/|
+    \.pytest_cache/|
+    __pycache__/|
+    \.mypy_cache/|
+    htmlcov/|
+    dist/|
+    build/|
+    \.eggs/|
+    .*\.egg-info/
+  )$
+
+fail_fast: false
+
+minimum_pre_commit_version: 3.0.0
